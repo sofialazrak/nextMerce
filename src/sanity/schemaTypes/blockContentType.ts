@@ -71,6 +71,6 @@ export const blockContentType = defineType({
           title: 'Alternative Text',
         }
       ]
-    }),
+    } as any),
   ],
 })
