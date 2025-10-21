@@ -25,17 +25,7 @@ export const authorType = defineType({
         hotspot: true,
       },
     }),
-    defineField({
-      name: 'bio',
-      type: 'array',
-      of: [
-        defineArrayMember({
-          type: 'block',
-          styles: [{title: 'Normal', value: 'normal'}],
-          lists: [],
-        }),
-      ],
-    }),
+    defineField({ name: 'bio', type: 'blockContent', title: 'Bio' }),
   ],
   preview: {
     select: {
