@@ -1,4 +1,4 @@
-import { defineType, defineField } from 'sanity'
+import { defineType, defineField, defineArrayMember } from 'sanity'
 
 export const orderType = defineType({
   name: 'order',
@@ -33,16 +33,18 @@ export const orderType = defineType({
       title: 'Items',
       type: 'array',
       readOnly: true,
-      of: [{
-        type: 'object',
-        fields: [
-          { name: 'productTitle', type: 'string', title: 'Product' },
-          { name: 'sku',          type: 'string', title: 'SKU' },
-          { name: 'quantity',     type: 'number', title: 'Qty' },
-          { name: 'unitPrice',    type: 'number', title: 'Unit Price' },
-          { name: 'lineTotal',    type: 'number', title: 'Line Total' },
-        ],
-      }],
+      of: [
+        defineArrayMember({
+          type: 'object',
+          fields: [
+            { name: 'productTitle', type: 'string', title: 'Product' },
+            { name: 'sku',          type: 'string', title: 'SKU' },
+            { name: 'quantity',     type: 'number', title: 'Qty' },
+            { name: 'unitPrice',    type: 'number', title: 'Unit Price' },
+            { name: 'lineTotal',    type: 'number', title: 'Line Total' },
+          ],
+      } as any),
+      ]
     }),
 
     defineField({ name: 'createdAt', title: 'Created At', type: 'datetime', readOnly: true }),
