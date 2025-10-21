@@ -41,5 +41,8 @@
         "eslint-config-next": "15.2.3",
         "prisma": "^6.17.1",
         "typescript": "5.2.2"
+    },
+    "overrides": {
+        "@sanity/client": "^7.12.0"
     }
 }
