@@ -11,6 +11,8 @@ import { reviewType } from './reviewType'
 import { addressType } from './addressType'
 import { customerType } from './customerType'
 import { orderType } from './orderType'
+import { orderItemType } from './orderItemType'
+
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -24,5 +26,6 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     reviewType,
     addressType,
     customerType,
-    orderType],
+    orderType,
+    orderItemType],
 }

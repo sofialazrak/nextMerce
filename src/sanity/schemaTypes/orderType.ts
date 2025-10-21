@@ -35,15 +35,8 @@ export const orderType = defineType({
       readOnly: true,
       of: [
         defineArrayMember({
-          type: 'object',
-          fields: [
-            { name: 'productTitle', type: 'string', title: 'Product' },
-            { name: 'sku',          type: 'string', title: 'SKU' },
-            { name: 'quantity',     type: 'number', title: 'Qty' },
-            { name: 'unitPrice',    type: 'number', title: 'Unit Price' },
-            { name: 'lineTotal',    type: 'number', title: 'Line Total' },
-          ],
-      } as any),
+          type: 'orderItem',   
+      }),
       ]
     }),
 
