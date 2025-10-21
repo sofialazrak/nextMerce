@@ -1,0 +1,204 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums ----------
+enum ProductStatus {
+  active
+  draft
+}
+
+enum OrderStatus {
+  pending // Order just placed, not yet processed.
+  paid // Payment confirmed, waiting to ship or prepare.
+  fulfilled // Items shipped/delivered to customer.
+  cancelled // Order cancelled before fulfillment.
+  refunded // Order fulfilled or cancelled, refund processed.
+}
+
+enum PaymentStatus {
+  unpaid // Customer has not completed checkout or payment.
+  paid // Payment successfully captured.
+  refunded // Refund fully or partially issued.
+  failed // Payment failed or card declined.
+}
+
+/**
+ * A single order may go through this sequence:
+ * OrderStatus	PaymentStatus	 Notes
+ * pending	    unpaid	       Customer filled cart but hasn’t paid.
+ * paid	        paid	         Payment succeeded; fulfillment pending.
+ * fulfilled 	  paid	         Shipped and paid.
+ * fulfilled	  refunded	     Refund processed after delivery issue.
+ * cancelled	  failed	       Payment failed; order void.
+ */
+
+// ---------- Models ----------
+model Customer {
+  id     String  @id @default(cuid())
+  email  String  @unique
+  name   String?
+  userId String? @unique
+
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  line1      String
+  line2      String?
+  city       String
+  state      String?
+  postalCode String
+  country    String
+  phone      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // You can keep these or remove them; they’re harmless and correctly named
+  shippingForOrders Order[] @relation("ShippingAddress")
+  billingForOrders  Order[] @relation("BillingAddress")
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  orderNumber   String        @unique // human-friendly (e.g. ORD-2025-000123)
+  status        OrderStatus   @default(pending)
+  paymentStatus PaymentStatus @default(unpaid)
+
+  // Customer link (nullable allows guest checkout)
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  // Totals (store as Decimal; pass as string from Node)
+  subtotal      Decimal @db.Decimal(10, 2)
+  taxTotal      Decimal @db.Decimal(10, 2)
+  shippingTotal Decimal @db.Decimal(10, 2)
+  discountTotal Decimal @db.Decimal(10, 2)
+  grandTotal    Decimal @db.Decimal(10, 2)
+
+  shippingAddressId String
+  billingAddressId  String
+  shippingAddress   Address @relation("ShippingAddress", fields: [shippingAddressId], references: [id], onDelete: Restrict)
+  billingAddress    Address @relation("BillingAddress", fields: [billingAddressId], references: [id], onDelete: Restrict)
+
+  // Optional payment provider metadata (Stripe intent id, etc.)
+  paymentRef String?
+  notes      String?
+
+  items OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@index([paymentStatus])
+}
+
+// represents one product entry within an order
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String // link to Product row at time of order
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  // Snapshot critical product data so totals don’t change if catalog changes later
+  productTitle String
+  sku          String? // optional if your Product.sku is optional
+  unitPrice    Decimal @db.Decimal(10, 2) // price at purchase time
+  quantity     Int
+  lineTotal    Decimal @db.Decimal(10, 2) // unitPrice * quantity
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Brand {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  logoUrl   String? // optional, can mirror Sanity image URL
+  website   String? // optional
+  products  Product[]
+  sanityId  String?   @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model ProductCategory {
+  id          String    @id @default(cuid())
+  title       String    @unique
+  slug        String    @unique
+  description String?
+  imageUrl    String? // optional, can mirror Sanity image URL
+  products    Product[]
+  sanityId    String?   @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  description     String?
+  sku             String?       @unique
+  price           Decimal       @db.Decimal(10, 2)
+  discountedPrice Decimal?      @db.Decimal(10, 2)
+  status          ProductStatus @default(active)
+  rating          Float?
+  stock           Int           @default(0)
+  isNewArrival    Boolean       @default(false)
+  isBestSeller    Boolean       @default(false)
+  isFeatured      Boolean       @default(false)
+  images          Json? // array of {url, alt}? mirrored from Sanity
+
+  // Relations
+  brandId    String
+  categoryId String
+  brand      Brand           @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  category   ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  // Optional: stable link back to Sanity product doc
+  sanityId String? @unique
+
+  reviews    Review[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  orderItems OrderItem[]
+
+  @@index([brandId])
+  @@index([categoryId])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  authorName String?
+  rating     Int
+  comment    String?
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([productId, isApproved])
+}
