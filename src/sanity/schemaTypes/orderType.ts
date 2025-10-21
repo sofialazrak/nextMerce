@@ -36,7 +36,7 @@ export const orderType = defineType({
       of: [
         defineArrayMember({
           type: 'orderItem',   
-      }),
+      } as any),
       ]
     }),
 
