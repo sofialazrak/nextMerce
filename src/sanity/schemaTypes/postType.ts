@@ -36,7 +36,7 @@ export const postType = defineType({
           title: 'Alternative text',
         })
       ]
-    }),
+    } as any),
     defineField({
       name: 'categories',
       type: 'array',
