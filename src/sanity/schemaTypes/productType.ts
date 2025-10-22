@@ -79,7 +79,7 @@ export const productType = defineType({
       type: 'reference',
       to: [{ type: 'brand' }],
       validation: (Rule) => Rule.required(),
-    }),
+    } as any),
 
     defineField({
       name: 'category',
@@ -87,7 +87,7 @@ export const productType = defineType({
       type: 'reference',
       to: [{ type: 'productCategory' }],
       validation: (Rule) => Rule.required(),
-    }),
+    } as any),
 
     defineField({
       name: 'images',
