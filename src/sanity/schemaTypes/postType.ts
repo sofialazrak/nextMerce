@@ -46,7 +46,7 @@ export const postType = defineType({
           to: [{ type: 'postCategory' }],
         } as any),
       ],
-    }),
+    } as any),
     defineField({
       name: 'publishedAt',
       type: 'datetime',
