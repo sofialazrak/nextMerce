@@ -107,7 +107,7 @@ export const productType = defineType({
         }),
       ],
       validation: (Rule) => Rule.min(1),
-    }),
+    } as any),
 
     defineField({
       name: 'isNewArrival',
