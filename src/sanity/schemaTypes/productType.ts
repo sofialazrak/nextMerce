@@ -1,5 +1,5 @@
 import { PackageIcon } from '@sanity/icons'
-import { defineField, defineType } from 'sanity'
+import { defineField, defineType, defineArrayMember } from 'sanity'
 
 export const productType = defineType({
   name: 'product',
@@ -26,8 +26,8 @@ export const productType = defineType({
       name: 'description',
       type: 'text',
       title: 'Description',
-      rows: 3,
-    }),
+      options: { rows: 3},
+    } as any),
     defineField({
       name: 'sku',
       type: 'string',
@@ -94,7 +94,7 @@ export const productType = defineType({
       title: 'Product Images',
       type: 'array',
       of: [
-        {
+        defineArrayMember({
           type: 'image',
           options: { hotspot: true },
           fields: [
@@ -104,7 +104,7 @@ export const productType = defineType({
               title: 'Alt Text',
             }),
           ],
-        },
+        }),
       ],
       validation: (Rule) => Rule.min(1),
     }),
