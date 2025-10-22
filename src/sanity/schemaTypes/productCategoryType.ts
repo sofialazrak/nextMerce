@@ -32,6 +32,6 @@ export const productCategoryType = defineType({
           description: 'For accessibility and SEO — describe what the image shows.',
         }),
       ]
-    }),
+    } as any),
   ],
 })
