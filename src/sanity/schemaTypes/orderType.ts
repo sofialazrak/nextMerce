@@ -38,7 +38,7 @@ export const orderType = defineType({
           type: 'orderItem',   
       } as any),
       ]
-    }),
+    } as any),
 
     defineField({ name: 'createdAt', title: 'Created At', type: 'datetime', readOnly: true }),
     defineField({ name: 'notes',     title: 'Notes (internal)', type: 'text' }),
